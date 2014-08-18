@@ -16,9 +16,36 @@
  */
 
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+
+using std::string;
+using std::cout;
+using std::endl;
+
+static const char PATH_DICT[] = "/usr/share/dict/words";
 
 int main(int argc, const char *argv[])
 {
+	std::vector<string> words;
+
+	// open dictionary
+	std::ifstream fDict;
+	fDict.open(PATH_DICT);
+
+	// read dictionary
+	for (string line; std::getline(fDict, line);){
+		if (line.length()<4) continue; // ignore short words
+		if (line.length()>12) continue; // ignore long words
+		if (line.substr(line.length()-2, string::npos) == "'s") continue; // ignore words ending in 's
+
+		words.push_back(line);
+	}
+
+	fDict.close();
+
+	cout << "selected " << words.size() << " words from " << PATH_DICT << "." << endl;
 	return 0;
 }
 
