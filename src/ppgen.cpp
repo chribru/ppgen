@@ -19,20 +19,21 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <random>
 
 using std::string;
 using std::cout;
 using std::endl;
 
-static const char PATH_DICT[] = "/usr/share/dict/words";
+static const char *PATH_DICT = "/usr/share/dict/words";
 
-int main(int argc, const char *argv[])
-{
-	std::vector<string> words;
-
+static bool readDict(const char* fileName, std::vector<string> &toVector){
 	// open dictionary
 	std::ifstream fDict;
-	fDict.open(PATH_DICT);
+	fDict.open(fileName);
+
+	if (!fDict.is_open())
+		return false;
 
 	// read dictionary
 	for (string line; std::getline(fDict, line);){
@@ -40,13 +41,43 @@ int main(int argc, const char *argv[])
 		if (line.length()>12) continue; // ignore long words
 		if (line.substr(line.length()-2, string::npos) == "'s") continue; // ignore words ending in 's
 
-		words.push_back(line);
+		toVector.push_back(line);
 	}
 
-	fDict.close();
+	return true;
+}
 
-	cout << "selected " << words.size() << " words from " << PATH_DICT << "." << endl;
-	return 0;
+static bool parseInt(const char* str, int &outInt){
+	try{
+		outInt = std::atol(str);
+		return true;
+	} catch (...) {}
+
+	return false;
+}
+
+
+int main(int argc, const char *argv[])
+{
+	std::vector<string> words;
+	readDict(PATH_DICT, words);
+
+	std::random_device dev;
+	std::uniform_int_distribution<int> dist(0, words.size()-1);
+
+	int nWords = 5;
+	int nSentences = 10;
+
+	if (argc > 1) parseInt(argv[1], nWords);
+	if (argc > 2) parseInt(argv[2], nSentences);
+
+	for (int sentence = 0; sentence < nSentences; ++sentence){
+		for (int word = 1; word < nWords; ++ word)
+			cout << words[dist(dev)] << " ";
+		cout << words[dist(dev)] << endl;
+	}
+
+
 }
 
 
